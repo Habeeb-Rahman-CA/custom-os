@@ -43,3 +43,4 @@ enter_user_mode:
     iretq
 
 .size enter_user_mode, . - enter_user_mode
+

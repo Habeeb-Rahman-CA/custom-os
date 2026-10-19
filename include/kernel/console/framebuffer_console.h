@@ -14,3 +14,4 @@ public:
 };
 
 } // namespace kernel::console
+

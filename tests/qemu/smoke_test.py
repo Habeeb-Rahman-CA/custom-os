@@ -36,6 +36,9 @@ EXPECTED_STRINGS = [
     "Welcome to CustomOS!",
     "[PROC] Jumping into Ring 3 user space execution...",
     "[USER] >>> Hello from User Mode (Ring 3) via SYSCALL! <<<",
+    "[SECURITY] Testing User-Mode Fault Isolation",
+    "[SECURITY/FAULT] Process PID",
+    "[TEST] User-mode fault isolation verified: process terminated cleanly without kernel panic!",
     ">>> ALL OPERATING SYSTEM MILESTONES COMPLETED SUCCESSFULLY! <<<"
 ]
 

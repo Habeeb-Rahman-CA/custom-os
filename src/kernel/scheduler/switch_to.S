@@ -57,6 +57,8 @@ switch_to:
 .extern task_exit_helper
 
 task_start_trampoline:
+    /* %r12 contains optional user argument, pass in %rdi per AMD64 ABI */
+    mov %r12, %rdi
     /* Call entry function pointed to by %rbx */
     call *%rbx
 
@@ -69,3 +71,4 @@ task_start_trampoline:
     jmp .halt_forever
 
 .size task_start_trampoline, . - task_start_trampoline
+

@@ -152,6 +152,11 @@ void cmd_cat(int argc, char** argv) {
     println();
 }
 
+static void user_process_launcher(void* arg) {
+    auto* proc = static_cast<process::Process*>(arg);
+    process::ProcessManager::execute_user_process(proc);
+}
+
 void cmd_run(int argc, char** argv) {
     if (argc < 2) {
         println("Usage: run <path_to_elf>");
@@ -170,8 +175,12 @@ void cmd_run(int argc, char** argv) {
         return;
     }
 
-    println("[SHELL] Transferring execution to Ring 3 user mode...");
-    process::ProcessManager::execute_user_process(proc);
+    println("[SHELL] Launching process task and waiting for completion...");
+    auto* task = scheduler::Scheduler::create_task(argv[1], user_process_launcher, proc);
+    while (task->state != scheduler::TaskState::Terminated) {
+        scheduler::Scheduler::yield();
+    }
+    println("[SHELL] Process completed execution.");
 }
 
 } // namespace
@@ -269,3 +278,4 @@ void Shell::run_repl() {
 }
 
 } // namespace kernel::shell
+

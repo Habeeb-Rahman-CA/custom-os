@@ -125,3 +125,4 @@ isr_stub_table:
     DEF_TABLE_ENTRY %j
     .set j, j + 1
 .endr
+

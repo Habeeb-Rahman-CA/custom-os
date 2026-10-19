@@ -2,31 +2,34 @@
  * Fast System Call Entry/Exit for x86-64 (SYSCALL / SYSRET)
  */
 
+.extern g_current_rsp0
+.extern syscall_dispatch_entry
+
 .section .bss
 .align 16
-.global syscall_kernel_stack_top
-syscall_kernel_stack_bottom:
-    .skip 0x4000
-syscall_kernel_stack_top:
-
-.section .data
-.global g_saved_user_rsp
-g_saved_user_rsp:
+g_temp_user_rsp:
     .quad 0
 
 .section .text
 .global syscall_entry
 .type syscall_entry, @function
-.extern syscall_dispatch_entry
 
 syscall_entry:
-    /* Save user RSP and switch to kernel syscall stack */
-    mov %rsp, g_saved_user_rsp(%rip)
-    lea syscall_kernel_stack_top(%rip), %rsp
+    /*
+     * Interrupts are disabled upon entry via MSR_FMASK (IF masked).
+     * Save user RSP to scratch variable temporarily, then switch
+     * to the running task's private kernel stack.
+     */
+    mov %rsp, g_temp_user_rsp(%rip)
+    mov g_current_rsp0(%rip), %rsp
 
-    /* Save user return context (RCX = RIP, R11 = RFLAGS) and callee-saved registers */
-    push %rcx
-    push %r11
+    /*
+     * Save user context directly onto the task's private kernel stack.
+     * This makes system calls completely re-entrant across preemptive switches.
+     */
+    push g_temp_user_rsp(%rip)  /* User RSP */
+    push %rcx                   /* User RIP */
+    push %r11                   /* User RFLAGS */
     push %rbp
     push %rbx
     push %r12
@@ -56,18 +59,16 @@ syscall_entry:
 
     /* %rax now contains the syscall return value */
 
-    /* Restore callee-saved registers and user context */
+    /* Restore callee-saved registers and user context from the task's kernel stack */
     pop %r15
     pop %r14
     pop %r13
     pop %r12
     pop %rbx
     pop %rbp
-    pop %r11
-    pop %rcx
-
-    /* Restore user stack pointer */
-    mov g_saved_user_rsp(%rip), %rsp
+    pop %r11                   /* User RFLAGS */
+    pop %rcx                   /* User RIP */
+    pop %rsp                   /* User RSP restored directly into %rsp */
 
     /* Return to Ring 3 */
     sysretq

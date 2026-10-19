@@ -22,3 +22,4 @@ constexpr u32 MSR_FMASK = 0xC0000084;
 }
 
 } // namespace kernel::arch::x86_64
+

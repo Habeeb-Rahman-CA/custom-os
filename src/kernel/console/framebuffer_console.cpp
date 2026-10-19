@@ -153,3 +153,4 @@ void FbConsole::write_string(const char* str, u32 fg, u32 bg) {
 }
 
 } // namespace kernel::console
+

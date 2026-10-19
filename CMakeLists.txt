@@ -30,12 +30,23 @@ set(KERNEL_LINK_FLAGS
     -T ${CMAKE_CURRENT_SOURCE_DIR}/linker.ld
 )
 
-# User-space ELF binary target
+set(CMAKE_ASM_FLAGS "${CMAKE_ASM_FLAGS} -I${CMAKE_CURRENT_BINARY_DIR} -I${CMAKE_CURRENT_SOURCE_DIR}")
+
+# User-space ELF binary targets
 add_custom_command(
-    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/hello.elf
-    COMMAND gcc -nostdlib -static -fno-pie -no-pie ${CMAKE_CURRENT_SOURCE_DIR}/user/programs/hello.S -o ${CMAKE_CURRENT_BINARY_DIR}/hello.elf
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/build/hello.elf
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/build
+    COMMAND gcc -nostdlib -static -fno-pie -no-pie ${CMAKE_CURRENT_SOURCE_DIR}/user/programs/hello.S -o ${CMAKE_CURRENT_BINARY_DIR}/build/hello.elf
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/user/programs/hello.S
     COMMENT "Compiling user hello.elf program"
+)
+
+add_custom_command(
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/build/fault.elf
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/build
+    COMMAND gcc -nostdlib -static -fno-pie -no-pie ${CMAKE_CURRENT_SOURCE_DIR}/user/programs/fault.S -o ${CMAKE_CURRENT_BINARY_DIR}/build/fault.elf
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/user/programs/fault.S
+    COMMENT "Compiling user fault.elf program"
 )
 
 # Kernel executable
@@ -67,7 +78,8 @@ add_executable(kernel.elf
     src/kernel/process/process.cpp
     src/kernel/filesystem/vfs.cpp
     src/kernel/shell/shell.cpp
-    ${CMAKE_CURRENT_BINARY_DIR}/hello.elf
+    ${CMAKE_CURRENT_BINARY_DIR}/build/hello.elf
+    ${CMAKE_CURRENT_BINARY_DIR}/build/fault.elf
 )
 
 target_include_directories(kernel.elf PRIVATE include ${CMAKE_CURRENT_BINARY_DIR})

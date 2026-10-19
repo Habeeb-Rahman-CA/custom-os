@@ -13,3 +13,4 @@ u64 get_uptime_sec();
 void sleep_ms(u64 ms);
 
 } // namespace kernel::drivers::timer
+

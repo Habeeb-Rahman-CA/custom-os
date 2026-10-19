@@ -5,6 +5,8 @@
 
 extern "C" const kernel::u8 g_hello_elf_start[];
 extern "C" const kernel::u8 g_hello_elf_end[];
+extern "C" const kernel::u8 g_fault_elf_start[];
+extern "C" const kernel::u8 g_fault_elf_end[];
 
 namespace kernel::fs {
 
@@ -114,6 +116,13 @@ void VFS::init() {
     if (elf_size > 0) {
         VFSNode* hello_elf = bin_dir->add_child("hello.elf", NodeType::File);
         hello_elf->write(0, g_hello_elf_start, elf_size);
+    }
+
+    // Create /bin/fault.elf for testing user exception fault isolation
+    usize fault_size = reinterpret_cast<u64>(g_fault_elf_end) - reinterpret_cast<u64>(g_fault_elf_start);
+    if (fault_size > 0) {
+        VFSNode* fault_elf = bin_dir->add_child("fault.elf", NodeType::File);
+        fault_elf->write(0, g_fault_elf_start, fault_size);
     }
 
     log::info("[VFS] Virtual File System initialized with in-memory root, /bin, and /hello.txt.");
@@ -252,3 +261,4 @@ void VFS::dump_tree(VFSNode* node, int indent) {
 }
 
 } // namespace kernel::fs
+

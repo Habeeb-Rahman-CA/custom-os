@@ -35,3 +35,4 @@ gdt_flush:
     ret
 
 .size gdt_flush, . - gdt_flush
+

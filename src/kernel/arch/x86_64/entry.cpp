@@ -210,13 +210,20 @@ extern "C" void kernel_main() {
     scheduler::Scheduler::create_task("user_launcher", user_mode_task);
     scheduler::Scheduler::yield();
 
+    log::info("[SECURITY] Testing User-Mode Fault Isolation (deliberate user #PF)...");
+    shell::Shell::execute_command("run /bin/fault.elf");
+    log::info("[TEST] User-mode fault isolation verified: process terminated cleanly without kernel panic!");
+
     log::info(">>> Milestone 9 to 14: User Mode, Syscalls, VFS, ELF Loader & Shell VERIFIED! <<<");
     log::info(">>> ALL OPERATING SYSTEM MILESTONES COMPLETED SUCCESSFULLY! <<<");
 
-    // Enable interrupts for interactive input
+    // Enable interrupts and spawn interactive shell task for REPL
     arch::x86_64::sti();
+    scheduler::Scheduler::create_task("shell", []() {
+        shell::Shell::run_repl();
+    });
 
     for (;;) {
-        asm volatile("hlt");
+        scheduler::Scheduler::yield();
     }
 }

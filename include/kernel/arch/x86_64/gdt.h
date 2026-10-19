@@ -58,7 +58,11 @@ class Gdt {
 public:
     static void init();
     static void set_kernel_stack(u64 rsp0);
+    static u64 get_default_rsp0();
     static Tss& get_tss();
 };
 
 } // namespace kernel::arch::x86_64
+
+extern "C" kernel::u64 g_current_rsp0;
+

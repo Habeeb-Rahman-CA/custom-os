@@ -1,6 +1,7 @@
 #include <kernel/syscall/syscall.h>
 #include <kernel/arch/x86_64/msr.h>
 #include <kernel/arch/x86_64/gdt.h>
+#include <kernel/memory/vmm.h>
 #include <kernel/drivers/serial.h>
 #include <kernel/drivers/keyboard.h>
 #include <kernel/console/framebuffer_console.h>
@@ -22,11 +23,22 @@ constexpr u64 USER_SPACE_LIMIT = 0x0000800000000000ULL;
 } // namespace
 
 bool validate_user_buffer(const void* ptr, usize size) {
-    if (!ptr) return false;
+    if (!ptr || size == 0) return false;
     u64 addr = reinterpret_cast<u64>(ptr);
     if (addr >= USER_SPACE_LIMIT) return false;
     if (addr + size > USER_SPACE_LIMIT) return false;
     if (addr + size < addr) return false; // Overflow check
+
+    // Validate that every 4 KiB page spanned by the buffer is mapped in VMM
+    u64 end = addr + size;
+    u64 page = addr & ~(memory::PAGE_SIZE - 1);
+    while (page < end) {
+        auto phys = memory::Vmm::translate(VirtAddr(page));
+        if (phys.as_u64() == 0) {
+            return false;
+        }
+        page += memory::PAGE_SIZE;
+    }
     return true;
 }
 
@@ -35,8 +47,18 @@ bool validate_user_string(const char* str) {
     u64 addr = reinterpret_cast<u64>(str);
     if (addr >= USER_SPACE_LIMIT) return false;
 
-    // Scan until null terminator or limit
+    // Scan until null terminator or limit, checking each page boundary
+    u64 last_checked_page = 0;
     while (addr < USER_SPACE_LIMIT) {
+        u64 current_page = addr & ~(memory::PAGE_SIZE - 1);
+        if (current_page != last_checked_page) {
+            auto phys = memory::Vmm::translate(VirtAddr(current_page));
+            if (phys.as_u64() == 0) {
+                return false;
+            }
+            last_checked_page = current_page;
+        }
+
         if (*reinterpret_cast<const char*>(addr) == '\0') {
             return true;
         }
@@ -132,3 +154,4 @@ u64 dispatch(u64 num, u64 arg1, u64 arg2, u64 arg3, u64 arg4, u64 arg5) {
 }
 
 } // namespace kernel::syscall
+

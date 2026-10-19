@@ -147,7 +147,11 @@ $(BUILD_DIR)/hello.elf: user/programs/hello.S | $(BUILD_DIR)
 	@echo "[USER-CC] $< -> $@"
 	@gcc -nostdlib -static -fno-pie -no-pie $< -o $@
 
-$(BUILD_DIR)/builtin_elf.o: $(SRC_DIR)/kernel/executable/builtin_elf.S $(BUILD_DIR)/hello.elf | $(BUILD_DIR)
+$(BUILD_DIR)/fault.elf: user/programs/fault.S | $(BUILD_DIR)
+	@echo "[USER-CC] $< -> $@"
+	@gcc -nostdlib -static -fno-pie -no-pie $< -o $@
+
+$(BUILD_DIR)/builtin_elf.o: $(SRC_DIR)/kernel/executable/builtin_elf.S $(BUILD_DIR)/hello.elf $(BUILD_DIR)/fault.elf | $(BUILD_DIR)
 	@echo "[AS]  $< -> $@"
 	@$(AS) $(ASFLAGS) $< -o $@
 

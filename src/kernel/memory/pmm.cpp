@@ -1,4 +1,5 @@
 #include <kernel/memory/pmm.h>
+#include <kernel/scheduler/spinlock.h>
 #include <kernel/core/boot_info.h>
 #include <kernel/core/logger.h>
 #include <kernel/core/panic.h>
@@ -12,6 +13,7 @@ usize g_total_frames = 0;
 usize g_used_frames  = 0;
 usize g_free_frames  = 0;
 usize g_last_scanned_idx = 0;
+scheduler::IrqSpinlock g_pmm_lock;
 
 inline void bitmap_set(usize frame_idx) {
     g_bitmap[frame_idx / 8] |= static_cast<u8>(1 << (frame_idx % 8));
@@ -113,6 +115,8 @@ void Pmm::init() {
 }
 
 PhysAddr Pmm::alloc_frame() {
+    scheduler::IrqLockGuard guard(g_pmm_lock);
+
     for (usize i = 0; i < g_total_frames; ++i) {
         usize idx = (g_last_scanned_idx + i) % g_total_frames;
 
@@ -131,6 +135,8 @@ PhysAddr Pmm::alloc_frame() {
 PhysAddr Pmm::alloc_frames(usize count) {
     if (count == 0) return PhysAddr(0);
     if (count == 1) return alloc_frame();
+
+    scheduler::IrqLockGuard guard(g_pmm_lock);
 
     usize consecutive = 0;
     usize start_idx = 0;
@@ -165,6 +171,8 @@ void Pmm::free_frame(PhysAddr addr) {
         panic("PMM: Attempted to free out-of-bounds physical frame!");
     }
 
+    scheduler::IrqLockGuard guard(g_pmm_lock);
+
     if (!bitmap_test(idx)) {
         panic("PMM: Duplicate or invalid free detected (double-free)!");
     }
@@ -192,3 +200,4 @@ void Pmm::dump_stats() {
 }
 
 } // namespace kernel::memory
+

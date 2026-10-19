@@ -1,5 +1,6 @@
 #include <kernel/scheduler/scheduler.h>
 #include <kernel/scheduler/spinlock.h>
+#include <kernel/arch/x86_64/gdt.h>
 #include <kernel/memory/heap.h>
 #include <kernel/memory/vmm.h>
 #include <kernel/drivers/timer.h>
@@ -42,7 +43,7 @@ void Scheduler::init() {
     log::info("[SCHED] Round-Robin Task Scheduler initialized (PID 0 online).");
 }
 
-Task* Scheduler::create_task(const char* name, void (*entry_func)()) {
+static Task* create_task_internal(const char* name, void* entry_func, void* arg) {
     LockGuard guard(g_sched_lock);
 
     auto* task = new Task();
@@ -64,7 +65,7 @@ Task* Scheduler::create_task(const char* name, void (*entry_func)()) {
     // switch_to pops: r15, r14, r13, r12, rbp, rbx
     *(--sp) = reinterpret_cast<u64>(entry_func); // Popped into %rbx!
     *(--sp) = 0;                                 // Popped into %rbp
-    *(--sp) = 0;                                 // Popped into %r12
+    *(--sp) = reinterpret_cast<u64>(arg);        // Popped into %r12 (passed as %rdi to entry_func)!
     *(--sp) = 0;                                 // Popped into %r13
     *(--sp) = 0;                                 // Popped into %r14
     *(--sp) = 0;                                 // Popped into %r15
@@ -77,6 +78,14 @@ Task* Scheduler::create_task(const char* name, void (*entry_func)()) {
     g_task_count++;
 
     return task;
+}
+
+Task* Scheduler::create_task(const char* name, void (*entry_func)()) {
+    return create_task_internal(name, reinterpret_cast<void*>(entry_func), nullptr);
+}
+
+Task* Scheduler::create_task(const char* name, void (*entry_func)(void*), void* arg) {
+    return create_task_internal(name, reinterpret_cast<void*>(entry_func), arg);
 }
 
 void Scheduler::yield() {
@@ -120,6 +129,14 @@ void Scheduler::yield() {
 
     next_task->state = TaskState::Running;
     g_current_task = next_task;
+
+    // Update TSS.rsp0 and g_current_rsp0 to the newly scheduled task's kernel stack
+    if (next_task->stack_base && next_task->stack_size > 0) {
+        u64 top_stack = reinterpret_cast<u64>(next_task->stack_base + next_task->stack_size);
+        arch::x86_64::Gdt::set_kernel_stack(top_stack);
+    } else {
+        arch::x86_64::Gdt::set_kernel_stack(arch::x86_64::Gdt::get_default_rsp0());
+    }
 
     switch_to(&prev->rsp, next_task->rsp, next_task->cr3);
 }

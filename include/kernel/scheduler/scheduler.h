@@ -32,6 +32,7 @@ public:
 
     // Create a new kernel task
     static Task* create_task(const char* name, void (*entry_func)());
+    static Task* create_task(const char* name, void (*entry_func)(void*), void* arg);
 
     // Yield CPU to the next ready task
     static void yield();
@@ -52,3 +53,4 @@ public:
 };
 
 } // namespace kernel::scheduler
+

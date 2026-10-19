@@ -1,6 +1,7 @@
 #include <kernel/memory/heap.h>
 #include <kernel/memory/pmm.h>
 #include <kernel/memory/vmm.h>
+#include <kernel/scheduler/spinlock.h>
 #include <kernel/core/logger.h>
 #include <kernel/core/panic.h>
 
@@ -9,10 +10,11 @@ namespace kernel::memory {
 namespace {
 
 constexpr u32 HEAP_MAGIC = 0xCAFEBABE;
+constexpr u32 HEAP_DEAD_MAGIC = 0xDEADDEAD;
 constexpr u64 HEAP_START_VIRT = 0xffffffff90000000ULL;
 constexpr usize INITIAL_HEAP_PAGES = 16; // 64 KiB initial heap
 
-struct BlockHeader {
+struct alignas(16) BlockHeader {
     usize size;         // Usable payload size in bytes
     bool is_free;
     u32 magic;
@@ -23,6 +25,7 @@ BlockHeader* g_heap_head = nullptr;
 u64 g_heap_current_top = HEAP_START_VIRT;
 usize g_allocated_bytes = 0;
 usize g_total_heap_bytes = 0;
+scheduler::IrqSpinlock g_heap_lock;
 
 void expand_heap(usize additional_bytes) {
     usize pages_needed = (additional_bytes + PAGE_SIZE - 1) / PAGE_SIZE;
@@ -52,6 +55,8 @@ void heap_init() {
 
 void* kmalloc(usize size) {
     if (size == 0) return nullptr;
+
+    scheduler::IrqLockGuard guard(g_heap_lock);
 
     // Align allocation to 16 bytes
     usize aligned_size = (size + 15) & ~15ULL;
@@ -105,11 +110,16 @@ void* kmalloc(usize size) {
         g_heap_head = new_chunk;
     }
 
-    return kmalloc(size);
+    // Allocate from newly expanded heap
+    new_chunk->is_free = false;
+    g_allocated_bytes += new_chunk->size;
+    return reinterpret_cast<void*>(reinterpret_cast<u8*>(new_chunk) + sizeof(BlockHeader));
 }
 
 void kfree(void* ptr) {
     if (!ptr) return;
+
+    scheduler::IrqLockGuard guard(g_heap_lock);
 
     auto* header = reinterpret_cast<BlockHeader*>(
         reinterpret_cast<u8*>(ptr) - sizeof(BlockHeader)
@@ -121,6 +131,12 @@ void kfree(void* ptr) {
 
     if (header->is_free) {
         panic("Heap double-free detected in kfree!");
+    }
+
+    // Poison memory payload to catch use-after-free
+    auto* payload = reinterpret_cast<u8*>(ptr);
+    for (usize i = 0; i < header->size; ++i) {
+        payload[i] = 0xDD;
     }
 
     header->is_free = true;
@@ -192,3 +208,4 @@ void operator delete(void* p, size_t) noexcept {
 void operator delete[](void* p, size_t) noexcept {
     kernel::memory::kfree(p);
 }
+

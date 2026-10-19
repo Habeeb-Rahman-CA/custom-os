@@ -1,5 +1,6 @@
 #include <kernel/interrupts/idt.h>
 #include <kernel/interrupts/pic.h>
+#include <kernel/scheduler/scheduler.h>
 #include <kernel/core/logger.h>
 #include <kernel/core/panic.h>
 #include <kernel/drivers/serial.h>
@@ -17,7 +18,9 @@ HandlerFunc g_handlers[256]{nullptr};
 
 extern "C" u64 isr_stub_table[256];
 
-const char* exception_names[32] = {
+} // namespace
+
+const char* const exception_names[32] = {
     "Divide Error (#DE)",
     "Debug (#DB)",
     "Non-Maskable Interrupt (#NMI)",
@@ -57,8 +60,6 @@ u64 read_cr2() {
     asm volatile("mov %%cr2, %0" : "=r"(val));
     return val;
 }
-
-} // namespace
 
 void IdtEntry::set_handler(u64 handler_addr, u16 sel, u8 ist_index, u8 dpl) {
     offset_low  = static_cast<u16>(handler_addr & 0xFFFF);
@@ -180,8 +181,43 @@ extern "C" void exception_dispatch(kernel::interrupts::InterruptFrame* frame) {
     if (kernel::interrupts::g_handlers[vec]) {
         kernel::interrupts::g_handlers[vec](frame);
     } else if (vec < 32) {
+        // User Mode Exception Fault Isolation (Ring 3)
+        bool is_user_mode = ((frame->cs & 3) == 3);
+        if (is_user_mode) {
+            auto* current_task = kernel::scheduler::Scheduler::get_current_task();
+            kernel::drivers::serial::write_string("\n[SECURITY/FAULT] Process PID ");
+            if (current_task) {
+                kernel::drivers::serial::write_u64_dec(current_task->pid);
+                kernel::drivers::serial::write_string(" ('");
+                kernel::drivers::serial::write_string(current_task->name);
+                kernel::drivers::serial::write_string("') ");
+            }
+            kernel::drivers::serial::write_string("terminated due to unhandled CPU exception: ");
+            if (vec < 32 && kernel::interrupts::exception_names[vec]) {
+                kernel::drivers::serial::write_string(kernel::interrupts::exception_names[vec]);
+            } else {
+                kernel::drivers::serial::write_u64_dec(vec);
+            }
+            kernel::drivers::serial::write_string(" at RIP: ");
+            kernel::drivers::serial::write_u64_hex(frame->rip);
+            kernel::drivers::serial::write_string(" (ErrorCode: ");
+            kernel::drivers::serial::write_u64_hex(frame->error_code);
+            kernel::drivers::serial::write_string(")\n");
+
+            if (vec == 14) { // Page Fault
+                u64 cr2 = kernel::interrupts::read_cr2();
+                kernel::drivers::serial::write_string("[SECURITY/FAULT] Faulting Virtual Address (CR2): ");
+                kernel::drivers::serial::write_u64_hex(cr2);
+                kernel::drivers::serial::write_char('\n');
+            }
+
+            // Safely terminate the faulting user task without crashing the kernel
+            kernel::scheduler::Scheduler::exit();
+            return;
+        }
+
         kernel::interrupts::Idt::dump_frame(frame);
-        kernel::panic("Unhandled CPU Exception occurred!");
+        kernel::panic("Unhandled Kernel CPU Exception occurred!");
     }
 
     // Hardware IRQs (32 - 47) require End of Interrupt signal to PIC

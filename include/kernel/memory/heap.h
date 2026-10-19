@@ -25,3 +25,4 @@ void  operator delete[](void* p, size_t) noexcept;
 
 inline void* operator new(size_t, void* p) noexcept { return p; }
 inline void* operator new[](size_t, void* p) noexcept { return p; }
+

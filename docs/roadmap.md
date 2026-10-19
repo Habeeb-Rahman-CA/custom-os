@@ -22,4 +22,5 @@ CustomOS is developed strictly following an incremental milestone progression. E
 | **Milestone 12** | **Storage & Executable Packaging** | **DONE** | Embedded executable packaging (`/bin/hello.elf` in RamFS), raw GPT disk generation via `tools/build/create_disk.sh`. |
 | **Milestone 13** | **User-Space Runtime & Command-Line Shell** | **DONE** | Interactive and automated shell (`help`, `clear`, `echo`, `meminfo`, `tasks`, `uptime`, `ls`, `cat`, `pwd`, `run`, `exit`), executing user-mode programs in Ring 3. |
 | **Milestone 14** | **Subsystem Verification & Diagnostics** | **DONE** | Comprehensive end-to-end automated QEMU smoke test (`tests/qemu/smoke_test.py`) validating all 14 subsystem acceptance criteria. |
-| **Milestone 15** | **Advanced Expansion (Optional Roadmap)** | Future | Multiprocessor (SMP), PCI bus scanning, VirtIO-Net networking, GUI window manager. |
+| **Milestone 15** | **Production Hardening & Fault Isolation** | **DONE** | Ring 3 exception fault isolation (process termination without kernel panic), re-entrant per-task kernel stacks for syscalls/IRQs, page-by-page user buffer validation (`-EFAULT`), allocator poisoning & `IrqSpinlock`. |
+| **Milestone 16** | **Advanced Expansion (Optional Roadmap)** | Future | Multiprocessor (SMP), PCI bus scanning, VirtIO-Net networking, GUI window manager. |

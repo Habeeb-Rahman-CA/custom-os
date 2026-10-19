@@ -25,8 +25,17 @@ extern "C" void gdt_flush(u64 gdt_ptr_addr, u16 code_sel, u16 data_sel, u16 tss_
 
 } // namespace
 
+extern "C" {
+    kernel::u64 g_current_rsp0{0};
+}
+
 void Gdt::set_kernel_stack(u64 rsp0) {
     g_tss.rsp0 = rsp0;
+    g_current_rsp0 = rsp0;
+}
+
+u64 Gdt::get_default_rsp0() {
+    return reinterpret_cast<u64>(g_kernel_rsp0_stack) + sizeof(g_kernel_rsp0_stack);
 }
 
 Tss& Gdt::get_tss() {
@@ -62,6 +71,7 @@ void Gdt::init() {
     // Setup Double Fault IST1 stack and Ring 0 transition stack RSP0
     g_tss.ist1 = reinterpret_cast<u64>(g_df_stack) + sizeof(g_df_stack);
     g_tss.rsp0 = reinterpret_cast<u64>(g_kernel_rsp0_stack) + sizeof(g_kernel_rsp0_stack);
+    g_current_rsp0 = g_tss.rsp0;
 
     // 0x28: TSS Descriptor (16 bytes in x86-64)
     u64 tss_base = reinterpret_cast<u64>(&g_tss);
