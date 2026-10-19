@@ -34,7 +34,28 @@ OBJS := $(BUILD_DIR)/boot.o \
         $(BUILD_DIR)/serial.o \
         $(BUILD_DIR)/logger.o \
         $(BUILD_DIR)/panic.o \
-        $(BUILD_DIR)/boot_info.o
+        $(BUILD_DIR)/boot_info.o \
+        $(BUILD_DIR)/gdt.o \
+        $(BUILD_DIR)/gdt_flush.o \
+        $(BUILD_DIR)/idt.o \
+        $(BUILD_DIR)/idt_stubs.o \
+        $(BUILD_DIR)/pic.o \
+        $(BUILD_DIR)/pmm.o \
+        $(BUILD_DIR)/vmm.o \
+        $(BUILD_DIR)/heap.o \
+        $(BUILD_DIR)/timer.o \
+        $(BUILD_DIR)/keyboard.o \
+        $(BUILD_DIR)/framebuffer_console.o \
+        $(BUILD_DIR)/scheduler.o \
+        $(BUILD_DIR)/switch_to.o \
+        $(BUILD_DIR)/syscall_entry.o \
+        $(BUILD_DIR)/syscall.o \
+        $(BUILD_DIR)/elf.o \
+        $(BUILD_DIR)/builtin_elf.o \
+        $(BUILD_DIR)/user_jump.o \
+        $(BUILD_DIR)/process.o \
+        $(BUILD_DIR)/vfs.o \
+        $(BUILD_DIR)/shell.o
 
 KERNEL_ELF := $(BUILD_DIR)/kernel.elf
 DISK_IMAGE := $(BUILD_DIR)/os.hdd
@@ -67,6 +88,94 @@ $(BUILD_DIR)/panic.o: $(SRC_DIR)/kernel/lib/panic.cpp | $(BUILD_DIR)
 	@$(CXX) $(CXXFLAGS) -c $< -o $@
 
 $(BUILD_DIR)/boot_info.o: $(SRC_DIR)/kernel/core/boot_info.cpp | $(BUILD_DIR)
+	@echo "[CXX] $< -> $@"
+	@$(CXX) $(CXXFLAGS) -c $< -o $@
+
+$(BUILD_DIR)/gdt.o: $(SRC_DIR)/kernel/arch/x86_64/gdt.cpp | $(BUILD_DIR)
+	@echo "[CXX] $< -> $@"
+	@$(CXX) $(CXXFLAGS) -c $< -o $@
+
+$(BUILD_DIR)/gdt_flush.o: $(SRC_DIR)/kernel/arch/x86_64/gdt_flush.S | $(BUILD_DIR)
+	@echo "[AS]  $< -> $@"
+	@$(AS) $(ASFLAGS) $< -o $@
+
+$(BUILD_DIR)/idt.o: $(SRC_DIR)/kernel/interrupts/idt.cpp | $(BUILD_DIR)
+	@echo "[CXX] $< -> $@"
+	@$(CXX) $(CXXFLAGS) -c $< -o $@
+
+$(BUILD_DIR)/idt_stubs.o: $(SRC_DIR)/kernel/interrupts/idt_stubs.S | $(BUILD_DIR)
+	@echo "[AS]  $< -> $@"
+	@$(AS) $(ASFLAGS) $< -o $@
+
+$(BUILD_DIR)/pic.o: $(SRC_DIR)/kernel/interrupts/pic.cpp | $(BUILD_DIR)
+	@echo "[CXX] $< -> $@"
+	@$(CXX) $(CXXFLAGS) -c $< -o $@
+
+$(BUILD_DIR)/pmm.o: $(SRC_DIR)/kernel/memory/pmm.cpp | $(BUILD_DIR)
+	@echo "[CXX] $< -> $@"
+	@$(CXX) $(CXXFLAGS) -c $< -o $@
+
+$(BUILD_DIR)/vmm.o: $(SRC_DIR)/kernel/memory/vmm.cpp | $(BUILD_DIR)
+	@echo "[CXX] $< -> $@"
+	@$(CXX) $(CXXFLAGS) -c $< -o $@
+
+$(BUILD_DIR)/heap.o: $(SRC_DIR)/kernel/memory/heap.cpp | $(BUILD_DIR)
+	@echo "[CXX] $< -> $@"
+	@$(CXX) $(CXXFLAGS) -c $< -o $@
+
+$(BUILD_DIR)/timer.o: $(SRC_DIR)/kernel/drivers/timer.cpp | $(BUILD_DIR)
+	@echo "[CXX] $< -> $@"
+	@$(CXX) $(CXXFLAGS) -c $< -o $@
+
+$(BUILD_DIR)/keyboard.o: $(SRC_DIR)/kernel/drivers/keyboard.cpp | $(BUILD_DIR)
+	@echo "[CXX] $< -> $@"
+	@$(CXX) $(CXXFLAGS) -c $< -o $@
+
+$(BUILD_DIR)/framebuffer_console.o: $(SRC_DIR)/kernel/console/framebuffer_console.cpp | $(BUILD_DIR)
+	@echo "[CXX] $< -> $@"
+	@$(CXX) $(CXXFLAGS) -c $< -o $@
+
+$(BUILD_DIR)/scheduler.o: $(SRC_DIR)/kernel/scheduler/scheduler.cpp | $(BUILD_DIR)
+	@echo "[CXX] $< -> $@"
+	@$(CXX) $(CXXFLAGS) -c $< -o $@
+
+$(BUILD_DIR)/switch_to.o: $(SRC_DIR)/kernel/scheduler/switch_to.S | $(BUILD_DIR)
+	@echo "[AS]  $< -> $@"
+	@$(AS) $(ASFLAGS) $< -o $@
+
+$(BUILD_DIR)/hello.elf: user/programs/hello.S | $(BUILD_DIR)
+	@echo "[USER-CC] $< -> $@"
+	@gcc -nostdlib -static -fno-pie -no-pie $< -o $@
+
+$(BUILD_DIR)/builtin_elf.o: $(SRC_DIR)/kernel/executable/builtin_elf.S $(BUILD_DIR)/hello.elf | $(BUILD_DIR)
+	@echo "[AS]  $< -> $@"
+	@$(AS) $(ASFLAGS) $< -o $@
+
+$(BUILD_DIR)/syscall_entry.o: $(SRC_DIR)/kernel/syscall/syscall_entry.S | $(BUILD_DIR)
+	@echo "[AS]  $< -> $@"
+	@$(AS) $(ASFLAGS) $< -o $@
+
+$(BUILD_DIR)/syscall.o: $(SRC_DIR)/kernel/syscall/syscall.cpp | $(BUILD_DIR)
+	@echo "[CXX] $< -> $@"
+	@$(CXX) $(CXXFLAGS) -c $< -o $@
+
+$(BUILD_DIR)/elf.o: $(SRC_DIR)/kernel/executable/elf.cpp | $(BUILD_DIR)
+	@echo "[CXX] $< -> $@"
+	@$(CXX) $(CXXFLAGS) -c $< -o $@
+
+$(BUILD_DIR)/user_jump.o: $(SRC_DIR)/kernel/process/user_jump.S | $(BUILD_DIR)
+	@echo "[AS]  $< -> $@"
+	@$(AS) $(ASFLAGS) $< -o $@
+
+$(BUILD_DIR)/process.o: $(SRC_DIR)/kernel/process/process.cpp | $(BUILD_DIR)
+	@echo "[CXX] $< -> $@"
+	@$(CXX) $(CXXFLAGS) -c $< -o $@
+
+$(BUILD_DIR)/vfs.o: $(SRC_DIR)/kernel/filesystem/vfs.cpp | $(BUILD_DIR)
+	@echo "[CXX] $< -> $@"
+	@$(CXX) $(CXXFLAGS) -c $< -o $@
+
+$(BUILD_DIR)/shell.o: $(SRC_DIR)/kernel/shell/shell.cpp | $(BUILD_DIR)
 	@echo "[CXX] $< -> $@"
 	@$(CXX) $(CXXFLAGS) -c $< -o $@
 
@@ -121,3 +230,4 @@ test: test-unit test-qemu
 clean:
 	@rm -rf $(BUILD_DIR)
 	@echo "Cleaned build directory."
+

@@ -46,3 +46,4 @@ The kernel must never blindly dereference a pointer passed from user space:
 1. **Canonical Address Check**: Pointer must not point into the higher-half kernel range (`>= 0x0000800000000000`).
 2. **Mapped Page Check**: The virtual page containing the buffer must exist and have User (`U/S = 1`) permissions in the active page directory.
 3. **Buffer Bounds**: `[buf, buf + count)` must be contiguous within user space without integer wrap-around.
+

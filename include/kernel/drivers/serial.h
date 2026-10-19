@@ -23,3 +23,4 @@ void write_u64_hex(u64 val, u16 port = COM1);
 void write_u64_dec(u64 val, u16 port = COM1);
 
 } // namespace kernel::drivers::serial
+

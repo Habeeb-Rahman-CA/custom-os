@@ -30,6 +30,14 @@ set(KERNEL_LINK_FLAGS
     -T ${CMAKE_CURRENT_SOURCE_DIR}/linker.ld
 )
 
+# User-space ELF binary target
+add_custom_command(
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/hello.elf
+    COMMAND gcc -nostdlib -static -fno-pie -no-pie ${CMAKE_CURRENT_SOURCE_DIR}/user/programs/hello.S -o ${CMAKE_CURRENT_BINARY_DIR}/hello.elf
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/user/programs/hello.S
+    COMMENT "Compiling user hello.elf program"
+)
+
 # Kernel executable
 add_executable(kernel.elf
     src/boot/boot.S
@@ -38,9 +46,31 @@ add_executable(kernel.elf
     src/kernel/core/logger.cpp
     src/kernel/lib/panic.cpp
     src/kernel/core/boot_info.cpp
+    src/kernel/arch/x86_64/gdt.cpp
+    src/kernel/arch/x86_64/gdt_flush.S
+    src/kernel/interrupts/idt.cpp
+    src/kernel/interrupts/idt_stubs.S
+    src/kernel/interrupts/pic.cpp
+    src/kernel/memory/pmm.cpp
+    src/kernel/memory/vmm.cpp
+    src/kernel/memory/heap.cpp
+    src/kernel/drivers/timer.cpp
+    src/kernel/drivers/keyboard.cpp
+    src/kernel/console/framebuffer_console.cpp
+    src/kernel/scheduler/scheduler.cpp
+    src/kernel/scheduler/switch_to.S
+    src/kernel/syscall/syscall_entry.S
+    src/kernel/syscall/syscall.cpp
+    src/kernel/executable/elf.cpp
+    src/kernel/executable/builtin_elf.S
+    src/kernel/process/user_jump.S
+    src/kernel/process/process.cpp
+    src/kernel/filesystem/vfs.cpp
+    src/kernel/shell/shell.cpp
+    ${CMAKE_CURRENT_BINARY_DIR}/hello.elf
 )
 
-target_include_directories(kernel.elf PRIVATE include)
+target_include_directories(kernel.elf PRIVATE include ${CMAKE_CURRENT_BINARY_DIR})
 target_compile_options(kernel.elf PRIVATE ${KERNEL_CXX_FLAGS})
 target_link_options(kernel.elf PRIVATE ${KERNEL_LINK_FLAGS})
 

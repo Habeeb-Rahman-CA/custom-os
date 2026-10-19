@@ -57,3 +57,4 @@ The common assembly interrupt stub must:
 - **Milestone 3**: Configure 8259 PIC (remap IRQ 0-7 to vectors 32-39, IRQ 8-15 to vectors 40-47).
 - **Milestone 6+**: APIC / IO-APIC migration for reliable multi-core interrupt routing.
 - **Acknowledgment (EOI)**: Handlers for hardware IRQs must write End-Of-Interrupt (`0x20` to master/slave PIC) before returning.
+

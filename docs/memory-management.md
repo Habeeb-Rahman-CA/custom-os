@@ -59,3 +59,4 @@ Dynamic allocations (`kmalloc`, `kfree`) operate over a dedicated virtual heap r
 - Invariants:
   - Strict size bounds and integer overflow checks on `size_t`.
   - Double-free detection and canary headers to catch buffer overflows.
+

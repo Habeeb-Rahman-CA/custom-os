@@ -86,3 +86,4 @@ void write_u64_dec(u64 val, u16 port) {
 }
 
 } // namespace kernel::drivers::serial
+

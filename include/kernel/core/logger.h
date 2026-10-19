@@ -23,3 +23,4 @@ inline void warn(const char* msg)  { write(Level::Warn, msg); }
 inline void error(const char* msg) { write(Level::Error, msg); }
 
 } // namespace kernel::log
+

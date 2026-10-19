@@ -56,3 +56,4 @@ Each process contains a `FileDescriptorTable` mapping integer descriptors (`0 = 
 
 1. **Milestone 11**: In-memory VFS (RamFS) allows creating files, directories, and reading data without physical device dependencies.
 2. **Milestone 12**: Block device abstraction and VirtIO-Block / ATA controller integration reading raw disk images.
+

@@ -40,3 +40,4 @@ halt_loop:
 stack_bottom:
     .skip 0x4000
 stack_top:
+

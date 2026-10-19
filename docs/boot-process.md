@@ -135,3 +135,4 @@ The earliest hardware device brought online is the **16550 UART Serial Controlle
 2. **Higher-Half Execution**: All symbols resolve in `0xffffffff80000000`..`0xffffffffffffffff`.
 3. **Interrupt Safety**: Interrupts remain disabled (`cli`) until the IDT is fully populated in Milestone 3.
 4. **Stack Alignment**: `%rsp` is 16-byte aligned prior to any C++ function call conforming to the System V AMD64 ABI.
+

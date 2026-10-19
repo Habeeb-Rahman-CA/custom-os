@@ -33,7 +33,9 @@ struct BootInfo {
 
 // Process Limine bootloader responses and populate BootInfo
 BootInfo& get_info();
+struct limine_memmap_response* get_raw_memmap();
 void init();
 void dump_to_log();
 
 } // namespace kernel::boot
+

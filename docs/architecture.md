@@ -71,3 +71,4 @@ Abstract file node hierarchy providing standard VFS operations (`open`, `read`, 
 
 ### 8. User Space & System Calls (`syscall`, `executable`, `user`)
 Configures Model-Specific Registers (MSRs) for fast `SYSCALL`/`SYSRET` transitions, validates user pointers, and executes ELF64 user programs in Ring 3.
+

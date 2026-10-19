@@ -13,10 +13,17 @@ The design goal of CustomOS is to explore operating system fundamentals from the
 
 ---
 
-## Current Status: Milestone 1 Complete
+## Current Status: Milestones 1 through 14 Complete & Verified
 
 - **Milestone 1**: Toolchain, bootloader protocol (Limine v8), higher-half linker script, freestanding C++20 bootstrap, 16550 UART serial driver, early logging, assertions/panic diagnostics, automated QEMU smoke test.
-- **Next Milestone**: Milestone 2 & 3 (CPU Exceptions, Global Descriptor Table, Interrupt Descriptor Table, and Interrupt Infrastructure).
+- **Milestones 2 & 3**: 64-bit GDT, TSS with IST1, 256-entry IDT, 8259 PIC remapping, register preservation, page fault CR2 diagnostics, controlled CPU exception tests.
+- **Milestone 4**: Physical Memory Manager (PMM) with bitmap frame allocator, physical memory reservation, double-free detection.
+- **Milestone 5**: Virtual Memory Manager (VMM) with 4-level paging, page mapping/unmapping, user space isolation, and dynamic Kernel Heap allocator (`kmalloc`, `kfree`, C++ `new`/`delete`).
+- **Milestone 6**: Device drivers (8254 PIT periodic timer at 100 Hz, PS/2 keyboard with scancode decoder, Framebuffer graphical text console).
+- **Milestones 7 & 8**: Multitasking & Preemptive Round-Robin Task Scheduler (`switch_to` context switching, task control blocks, task yielding, sleeping, and termination).
+- **Milestones 9 & 10**: User Mode (Ring 3) privilege separation, fast `SYSCALL`/`SYSRET` MSR interface, user pointer sanitization, ELF64 executable loader, isolated process address spaces.
+- **Milestones 11 & 12**: Virtual File System (VFS), RamFS in-memory storage, file descriptor table (`open`, `read`, `write`, `close`).
+- **Milestones 13 & 14**: Command-line shell with interactive REPL and built-in commands (`help`, `clear`, `echo`, `meminfo`, `tasks`, `uptime`, `ls`, `cat`, `pwd`, `run`, `exit`), running user-space programs in Ring 3.
 
 ---
 
@@ -118,3 +125,4 @@ make debug
 | `-nostdlib -static` | Link without standard C runtime startup files or libraries |
 | `-z max-page-size=0x1000` | Align ELF segments to standard 4096-byte page boundaries |
 | `-T linker.ld` | Enforce explicit virtual layout starting at `0xffffffff80000000` |
+

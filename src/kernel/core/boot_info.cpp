@@ -75,6 +75,10 @@ BootInfo& get_info() {
     return g_boot_info;
 }
 
+struct limine_memmap_response* get_raw_memmap() {
+    return memmap_req.response;
+}
+
 void init() {
     // Verify Limine base revision support
     if (!LIMINE_BASE_REVISION_SUPPORTED) {
@@ -155,3 +159,4 @@ void dump_to_log() {
 }
 
 } // namespace kernel::boot
+

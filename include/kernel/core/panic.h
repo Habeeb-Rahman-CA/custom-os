@@ -14,3 +14,4 @@ namespace kernel {
             ::kernel::panic("Assertion failed: " #cond, __FILE__, __LINE__);   \
         }                                                                      \
     } while (0)
+

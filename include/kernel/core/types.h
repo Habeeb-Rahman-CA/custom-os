@@ -16,6 +16,8 @@ using i32 = int32_t;
 using i64 = int64_t;
 
 using usize = size_t;
+using isize = int64_t;
+using ssize_t = int64_t;
 using uptr  = uintptr_t;
 
 // Physical and Virtual address wrappers for type safety
@@ -45,3 +47,4 @@ struct VirtAddr {
 };
 
 } // namespace kernel
+

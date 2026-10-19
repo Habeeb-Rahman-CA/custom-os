@@ -62,3 +62,4 @@ void write_kv_u64_dec(Level level, const char* key, u64 val) {
 }
 
 } // namespace kernel::log
+

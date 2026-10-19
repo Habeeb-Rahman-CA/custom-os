@@ -11,14 +11,32 @@ import os
 
 EXPECTED_STRINGS = [
     "CustomOS Kernel v0.1.0",
-    "[Stage 1/3] Serial console & early logging online",
-    "[Stage 2/3] Parsing Limine bootloader protocol responses",
-    "Bootloader Name: Limine",
-    "HHDM Direct Map Base: 0xffff",
-    "Memory Map Entries:",
-    "[Stage 3/3] Verifying early kernel invariants",
-    "Kernel invariant self-checks PASSED",
-    ">>> Milestone 1: Toolchain, bootloader, linker & QEMU verified! <<<"
+    "[GDT] 64-bit Global Descriptor Table & TSS loaded with IST1",
+    "[PIC] 8259 PIC remapped to vectors 32-47",
+    "[IDT] 256-entry Interrupt Descriptor Table loaded",
+    "[TEST] CPU Breakpoint (#BP) exception caught and handled cleanly!",
+    "[PMM] Physical Frame Allocator (Bitmap) initialized",
+    "[TEST] PMM frame allocation & deallocation verified",
+    "[VMM] 4-level Paging Virtual Memory Manager initialized",
+    "[TEST] VMM virtual page mapping and translation verified",
+    "[HEAP] Dynamic Kernel Heap allocator initialized",
+    "[TEST] Kernel dynamic heap and C++ new/delete operators verified",
+    "[TIMER] PIT timer configured at 100 Hz",
+    "[KEYBOARD] PS/2 keyboard driver initialized",
+    "[SCHED] Round-Robin Task Scheduler initialized",
+    "[TASK A] Task Alpha entered execution",
+    "[TASK B] Task Beta entered execution",
+    "[SYSCALL] Fast System Call (SYSCALL/SYSRET) infrastructure configured",
+    "[PROC] Process Manager initialized",
+    "[VFS] Virtual File System initialized with in-memory root",
+    "[TEST] VFS file open, read, and close operations verified",
+    "[SHELL] Command-Line Shell subsystem initialized",
+    "CustomOS Shell Built-in Commands:",
+    "Physical RAM Total:",
+    "Welcome to CustomOS!",
+    "[PROC] Jumping into Ring 3 user space execution...",
+    "[USER] >>> Hello from User Mode (Ring 3) via SYSCALL! <<<",
+    ">>> ALL OPERATING SYSTEM MILESTONES COMPLETED SUCCESSFULLY! <<<"
 ]
 
 def run_test(disk_img="build/os.hdd", timeout_sec=10):
@@ -87,3 +105,4 @@ if __name__ == "__main__":
     disk = sys.argv[1] if len(sys.argv) > 1 else "build/os.hdd"
     timeout = int(sys.argv[2]) if len(sys.argv) > 2 else 10
     sys.exit(run_test(disk, timeout))
+

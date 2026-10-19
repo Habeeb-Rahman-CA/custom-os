@@ -54,3 +54,4 @@ namespace kernel::arch::x86_64 {
 }
 
 } // namespace kernel::arch::x86_64
+

@@ -39,3 +39,4 @@ All system calls validate:
 - **ASLR**: Kernel and user processes are currently linked at deterministic base addresses.
 - **SMEP / SMAP**: Hardware SMEP (Supervisor Mode Execution Prevention) and SMAP (Supervisor Mode Access Prevention) flags in `%cr4` will be explicitly activated in Milestone 9.
 - **Capability-Based Access Control**: File permissions will implement standard UNIX `rwx` bits in Milestone 11.
+
