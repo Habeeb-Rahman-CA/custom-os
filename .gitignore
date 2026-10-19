@@ -1,0 +1,16 @@
+# Build artifacts
+build/
+build_cmake/
+*.o
+*.elf
+*.bin
+*.hdd
+*.iso
+*.log
+
+# Editor & IDE files
+.vscode/
+.idea/
+*.swp
+*~
+compile_commands.json
